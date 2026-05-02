@@ -29,6 +29,7 @@ jobs:
             # "cx-slot-7"
             # "cx-slot-8"
             # "cx-slot-9"
+            # "cx-slot-10"
           )
 
           for REPO in "${REPOS[@]}"; do
