@@ -42,8 +42,8 @@
             displayedMessageCount = HISTORY_BATCH_SIZE;
 
             // 立即清除 localStorage 备份，防止 _tryRecoverFromBackup 在 IndexedDB 写入前恢复旧消息
-            try { localStorage.removeItem('BACKUP_V1_critical'); } catch(e) {}
-            try { localStorage.removeItem('BACKUP_V1_timestamp'); } catch(e) {}
+            try { localStorage.removeItem(_BACKUP_PREFIX + 'critical'); } catch(e) {}
+            try { localStorage.removeItem(_BACKUP_PREFIX + 'timestamp'); } catch(e) {}
 
             // 直接写入 IndexedDB（跳过 500ms 防抖），确保刷新后不恢复
             localforage.setItem(getStorageKey('chatMessages'), []).catch(() => {});
@@ -506,7 +506,8 @@ window.deleteAnniversaryItem = function(id) {
     }
 };
 
-const _BACKUP_PREFIX = 'BACKUP_V1_';
+const _BACKUP_PROJECT = (window.location.pathname.split('/')[1] || 'default');
+const _BACKUP_PREFIX = 'BACKUP_V1_' + _BACKUP_PROJECT + '_';
 function _backupCriticalData() {
     if (window._skipBackup) return;
     try {
