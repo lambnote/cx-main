@@ -1,0 +1,32 @@
+name: Sync to sub-repos
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync to sub-repos
+        env:
+          TOKEN: ${{ secrets.SYNC_TOKEN }}
+        run: |
+          git config user.name "lambnote"
+          git config user.email "lambnote@users.noreply.github.com"
+
+          # ═══ 在这里加子仓库，每行一个 ═══
+          REPOS=(
+            # "cx-roleA"
+            # "cx-roleB"
+          )
+
+          for REPO in "${REPOS[@]}"; do
+            echo ">>> Syncing to $REPO"
+            git remote add "$REPO" "https://x-access-token:${TOKEN}@github.com/lambnote/${REPO}.git" 2>/dev/null || true
+            git push "$REPO" main --force
+          done
