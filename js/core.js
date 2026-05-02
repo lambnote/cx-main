@@ -529,6 +529,11 @@ window.deleteAnniversaryItem = function(id) {
 
 const _BACKUP_PROJECT = (window.location.pathname.split('/')[1] || 'default');
 const _BACKUP_PREFIX = 'BACKUP_V1_' + _BACKUP_PROJECT + '_';
+
+// 项目隔离的 localStorage 读写工具
+function _pGet(key) { return localStorage.getItem(_BACKUP_PROJECT + '_' + key); }
+function _pSet(key, val) { localStorage.setItem(_BACKUP_PROJECT + '_' + key, val); }
+function _pRemove(key) { localStorage.removeItem(_BACKUP_PROJECT + '_' + key); }
 function _backupCriticalData() {
     if (window._skipBackup) return;
     try {
@@ -1668,7 +1673,7 @@ if (partnerPersonas && partnerPersonas.length > 0 && Math.random() < 0.3) {
             }
             const disabledItemsOnce = (() => {
                 try {
-                    const raw = localStorage.getItem('disabledReplyItems');
+                    const raw = _pGet('disabledReplyItems');
                     return raw ? new Set(JSON.parse(raw)) : new Set();
                 } catch (e) { return new Set(); }
             })();
@@ -1713,7 +1718,7 @@ if (partnerPersonas && partnerPersonas.length > 0 && Math.random() < 0.3) {
 
                     let disabledStickerItems = new Set();
                     try {
-                        const raw = localStorage.getItem('disabledStickerItems');
+                        const raw = _pGet('disabledStickerItems');
                         if (raw) disabledStickerItems = new Set(JSON.parse(raw));
                     } catch (e) {}
                     const enabledStickerPool = (stickerLibrary || []).filter(s => !disabledStickerItems.has(s));
@@ -1937,11 +1942,11 @@ function showModal(modalElement, focusElement = null) {
                 try {
                     let dgCustomData = null, dgStatusPool = null, customWeatherMap = {};
                     if (inclSettings) {
-                        try { dgCustomData = JSON.parse(localStorage.getItem('dg_custom_data') || 'null'); } catch(e2) {}
-                        try { dgStatusPool = JSON.parse(localStorage.getItem('dg_status_pool') || 'null'); } catch(e2) {}
+                        try { dgCustomData = JSON.parse(_pGet('dg_custom_data') || 'null'); } catch(e2) {}
+                        try { dgStatusPool = JSON.parse(_pGet('dg_status_pool') || 'null'); } catch(e2) {}
                         try {
                             Object.keys(localStorage).forEach(kk => {
-                                if (kk && kk.startsWith('customWeather_')) {
+                                if (kk && kk.startsWith(_BACKUP_PROJECT + '_customWeather_')) {
                                     customWeatherMap[kk] = localStorage.getItem(kk);
                                 }
                             });
@@ -2179,9 +2184,9 @@ function showModal(modalElement, focusElement = null) {
                                     if (settings.customGlobalCss) applyGlobalThemeCss(settings.customGlobalCss);
                                 } catch(e2) { console.warn('导入后样式应用失败', e2); }
                             }
-                            if (importedData.dgCustomData) { try { localStorage.setItem('dg_custom_data', JSON.stringify(importedData.dgCustomData)); } catch(e2) {} }
-                            if (importedData.dgStatusPool) { try { localStorage.setItem('dg_status_pool', JSON.stringify(importedData.dgStatusPool)); } catch(e2) {} }
-                            if (importedData.customWeatherMap) { try { Object.keys(importedData.customWeatherMap).forEach(wk => localStorage.setItem(wk, importedData.customWeatherMap[wk])); } catch(e2) {} }
+                            if (importedData.dgCustomData) { try { _pSet('dg_custom_data', JSON.stringify(importedData.dgCustomData)); } catch(e2) {} }
+                            if (importedData.dgStatusPool) { try { _pSet('dg_status_pool', JSON.stringify(importedData.dgStatusPool)); } catch(e2) {} }
+                            if (importedData.customWeatherMap) { try { Object.keys(importedData.customWeatherMap).forEach(wk => _pSet('customWeather_' + wk.replace(/^.*?customWeather_/, ''), importedData.customWeatherMap[wk])); } catch(e2) {} }
                         }
                         if (doReplies  && importedData.customReplies)  customReplies  = importedData.customReplies;
                         if (doReplies  && importedData.customEmojis && Array.isArray(importedData.customEmojis)) customEmojis = importedData.customEmojis;
