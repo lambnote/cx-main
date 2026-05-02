@@ -55,18 +55,39 @@
 
     if (_resetAllBtn) _resetAllBtn.onclick = () => {
         closeDialog();
-        if (confirm('【高危操作】确定要重置所有数据吗？此操作将清除所有本地数据且无法恢复！')) {
+        if (confirm('【高危操作】确定要重置所有数据吗？此操作将清除当前项目的所有本地数据且无法恢复！')) {
             window._skipBackup = true;
             messages = [];
             settings = {};
-            localforage.clear().then(() => {
-                localStorage.clear();
+
+            // 只清除当前项目的数据，不影响其他项目
+            const projectPath = window.location.pathname.split('/')[1] || 'default';
+            const prefixToRemove = APP_PREFIX + projectPath + '_';
+            const backupPrefix = 'BACKUP_V1_' + projectPath + '_';
+
+            // 清除 localforage 中当前项目的 key
+            localforage.keys().then(keys => {
+                const removePromises = keys
+                    .filter(k => k.startsWith(prefixToRemove) || k.startsWith(APP_PREFIX + 'sessionList') || k.startsWith(APP_PREFIX + 'lastSessionId'))
+                    .map(k => localforage.removeItem(k));
+                return Promise.all(removePromises);
+            }).then(() => {
+                // 清除 localStorage 中当前项目的 key
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.startsWith(prefixToRemove) || key.startsWith(backupPrefix))) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(k => localStorage.removeItem(k));
+
                 showNotification('所有数据已重置，页面即将刷新', 'info', 2000);
                 setTimeout(() => { window.location.href = window.location.pathname + '?reset=' + Date.now(); }, 2000);
             }).catch(e => {
                 window._skipBackup = false;
                 showNotification('清除数据时发生错误', 'error');
-                console.error("清除 localforage 失败:", e);
+                console.error("清除数据失败:", e);
             });
         }
     };
