@@ -21,8 +21,14 @@ jobs:
 
           # ═══ 在这里加子仓库，每行一个 ═══
           REPOS=(
-            # "cx-roleA"
-            # "cx-roleB"
+            # "cx-slot-2"
+            # "cx-slot-3"
+            # "cx-slot-4"
+            # "cx-slot-5"
+            # "cx-slot-6"
+            # "cx-slot-7"
+            # "cx-slot-8"
+            # "cx-slot-9"
           )
 
           for REPO in "${REPOS[@]}"; do
